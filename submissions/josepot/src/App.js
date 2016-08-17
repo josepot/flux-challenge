@@ -1,9 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { compose, lifecycle } from 'recompose';
 
 import { actionCreators } from './actions';
-import { OBI_WS } from './config';
 import { storeToProps } from './queries';
 
 import PlanetMonitor from './components/planet-monitor';
@@ -34,15 +32,4 @@ const App = ({
   </div>
 );
 
-export default compose(
-  connect(storeToProps, actionCreators),
-  lifecycle({
-    componentWillMount() {
-      this.ws = new WebSocket(OBI_WS);
-      this.ws.onmessage = e => this.props.onObiWanMoved(JSON.parse(e.data));
-    },
-    componentWillUnmount() {
-      this.ws.close();
-    }
-  })
-)(App);
+export default connect(storeToProps, actionCreators)(App);

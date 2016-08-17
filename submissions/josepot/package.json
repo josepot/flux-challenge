@@ -3,7 +3,9 @@
   "version": "0.0.1",
   "private": true,
   "devDependencies": {
-    "react-scripts": "0.2.1"
+    "copy-cli": "^1.2.1",
+    "react-scripts": "0.2.1",
+    "replace": "^0.3.0"
   },
   "dependencies": {
     "classnames": "^2.2.5",
@@ -12,15 +14,16 @@
     "react": "^15.2.1",
     "react-dom": "^15.2.1",
     "react-redux": "^4.4.5",
-    "recompose": "^0.20.2",
     "redux": "^3.5.2",
     "redux-saga": "^0.11.0",
     "reselect": "^2.5.3",
     "xhr": "^2.2.2"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
+    "reset-template": "./node_modules/.bin/copy index.template.html > index.html",
+    "post-build": "./node_modules/.bin/copy ./build/index.html > index.html && replace '\"/' '\"./build/' ./index.html",
+    "start": "npm run reset-template && react-scripts start",
+    "build": "npm run reset-template && react-scripts build && npm run post-build",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {

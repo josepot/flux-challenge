@@ -1,3 +1,4 @@
+import { eventChannel } from 'redux-saga';
 import {
   call, cancel, cancelled, fork, select, take, put,
 } from 'redux-saga/effects';
@@ -5,7 +6,14 @@ import xhr from 'xhr';
 
 import { getCurrentPlanetMatch, getNextSithIdToLoad } from './queries';
 import { OBI_WAN_MOVED, SITH_LOADED, UP, DOWN, actionCreators } from './actions';
-import { SITHS_API, INITIAL_SITH_ID } from './config';
+import { INITIAL_SITH_ID, OBI_WS, SITHS_API } from './config';
+
+const createSocketChannel = port => eventChannel(emit => {
+  const ws = new WebSocket(port);
+  ws.onmessage = e => emit(JSON.parse(e.data));
+  const unsubscribe = () => ws.close;
+  return unsubscribe;
+});
 
 const requests = {
   [UP]: null,
@@ -13,12 +21,21 @@ const requests = {
 };
 
 export default function* main(){
+  yield fork(obiListener, OBI_WS);
   yield fork(makeRequest, INITIAL_SITH_ID);
 
   while(true) {
     const action = yield take('*');
-    yield fork(cancelUnnecessaryRequests, action.type);
+    yield call(cancelUnnecessaryRequests, action.type);
     yield fork(makeNecessaryRequests);
+  }
+}
+
+function* obiListener(port) {
+  const obiChannel = yield call(createSocketChannel, port);
+  while (true) {
+    const obi = yield take(obiChannel);
+    yield put(actionCreators.onObiWanMoved(obi));
   }
 }
 

@@ -1,22 +1,16 @@
 import React, { PropTypes } from 'react';
-import classNames from 'classnames';
 
 const ScrollButtons = ({
   onScrollUp, onScrollDown,
   isScrollUpDisabled, isScrollDownDisabled,
 }) => {
-  const upClass =
-    classNames('css-button-up', { 'css-button-disabled': isScrollUpDisabled });
-
-  const downClass =
-    classNames('css-button-down', { 'css-button-disabled': isScrollDownDisabled });
   return (
       <div className="css-scroll-buttons">
-        <button className={upClass}
+        <button className={'css-button-up' + (isScrollUpDisabled ? ' css-button-disabled' : '')}
                 onClick={ (e) => isScrollUpDisabled ? e.preventDefault() :
                                                       onScrollUp() }>
         </button>
-        <button className={downClass}
+        <button className={'css-button-down' + (isScrollDownDisabled ? ' css-button-disabled' : '')}
                 onClick={ (e) => isScrollDownDisabled ? e.preventDefault() :
                                                         onScrollDown() }>
         </button>

@@ -90,6 +90,7 @@ var wss = new WebSocketServer({ server: wsHttpServer })
 var timeout;
 
 wss.on('connection', function connection(ws) {
+
   ws.on('message', function incoming(message) {
     console.log('WebSocketServer received: %s', message);
     sendRandomWorld();
@@ -97,6 +98,7 @@ wss.on('connection', function connection(ws) {
 
   function sendRandomWorld() {
     var world = worlds[Math.floor(Math.random()*worlds.length)];
+    console.log("Sending world "+ JSON.stringify(world));
     ws.send(JSON.stringify(world));
   }
 

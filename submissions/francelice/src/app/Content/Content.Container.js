@@ -1,12 +1,12 @@
 import React, { Component } from "react"
 import Content from './Content.Component';
 import { connect } from 'react-redux';
-import { updateSiths } from '../../modules/items';
+import { ACTIONS } from '../../modules/items';
 
 class ContentContainer extends Component {
     
     componentDidMount(){
-        //FETCH FIRST JEDI    
+        this.props.getFirstSith();
     }
     
     render() {
@@ -15,6 +15,6 @@ class ContentContainer extends Component {
 }
 
 const mapStateToProps = state => ({siths: state.siths});
-const mapDispatchToProps = { updateSiths }
+const mapDispatchToProps = dispatch => ({getFirstSith: () => dispatch({type: ACTIONS.FIRST_FETCH})})
 
 export default connect(mapStateToProps, mapDispatchToProps)(ContentContainer)

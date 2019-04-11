@@ -8,7 +8,7 @@ class List extends Component {
     const {className, content, itemClassName} = this.props;
     return (
       <ul className={className}>
-        {content.map( item => <Item content={item} className={itemClassName} />)}
+        {content.map( item => <Item content={item.content} key={item.id} className={itemClassName} />)}
       </ul>
     )
   }

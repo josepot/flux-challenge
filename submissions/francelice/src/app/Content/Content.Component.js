@@ -3,11 +3,14 @@ import List from '../../common/components/list';
 
 const rootStyle = 'css-slots';
 const itemsStyle = 'css-slot';
-const empty = "";
 
-const itemInfo = (item) => (<Fragment><h3>{item.name?item.name:empty}</h3><h6> {item.homeworld?`Homeworld: ${item.homeworld.name}`:empty}</h6></Fragment>)
+const itemInfo = (item, i) => {
+
+  return item && item.info ?
+  {id: item.id, content: <Fragment><h3>{item.info.name}</h3><h6>{`Homeworld: ${item.info.homeworld.name}`}</h6></Fragment>}:
+  {id: i, content: <Fragment/>}}
 
 export default props => {
-    return (<List className={rootStyle} content={props.siths.map(item => (itemInfo(item)))} itemClassName={itemsStyle}/>)
+    return (<List className={rootStyle} content={props.siths.map((item,i) => (itemInfo(item,i)))} itemClassName={itemsStyle}/>)
 }
 

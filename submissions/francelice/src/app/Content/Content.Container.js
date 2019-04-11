@@ -1,7 +1,7 @@
 import React, { Component } from "react"
 import Content from './Content.Component';
 import { connect } from 'react-redux';
-import { ACTIONS } from '../../modules/items';
+import { firstSith } from '../../modules/items';
 
 class ContentContainer extends Component {
     
@@ -14,7 +14,7 @@ class ContentContainer extends Component {
     }
 }
 
-const mapStateToProps = state => ({siths: state.siths});
-const mapDispatchToProps = dispatch => ({getFirstSith: () => dispatch({type: ACTIONS.FIRST_FETCH})})
+const mapStateToProps = state => ({siths: state.siths.indexTable.map(item => state.siths.infoTable[item])});
+const mapDispatchToProps = dispatch => ({getFirstSith: () => dispatch(firstSith)})
 
 export default connect(mapStateToProps, mapDispatchToProps)(ContentContainer)

@@ -6,6 +6,7 @@ class List extends Component {
 
   render() {
     const {className, content, itemClassName} = this.props;
+
     return (
       <ul className={className}>
         {content.map( item => <Item content={item.content} key={item.id} className={itemClassName} />)}

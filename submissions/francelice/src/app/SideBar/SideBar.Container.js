@@ -15,7 +15,12 @@ class SideBarContainer extends Component {
     }
 }
 
-const mapStateToProps = state => ({siths: state.siths});
+const mapStateToProps = state => ({
+    siths: state.siths,
+    scrollUpEnabled: state.siths.infoTable[state.siths.indexTable[0]] && state.siths.infoTable[state.siths.indexTable[0]].info && state.siths.infoTable[state.siths.indexTable[0]].info.master.id,
+    scrollDownEnabled: state.siths.infoTable[state.siths.indexTable.slice(-1)[0]] && state.siths.infoTable[state.siths.indexTable.slice(-1)[0]].info && state.siths.infoTable[state.siths.indexTable.slice(-1)[0]].info.apprentice.id
+});
+
 const mapDispatchToProps =  dispatch => (
     {scrollUp: () => dispatch(scrollUp), 
      scrollDown: () => dispatch(scrollDown)})

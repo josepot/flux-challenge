@@ -15,10 +15,12 @@ class SideBarContainer extends Component {
     }
 }
 
-const mapStateToProps = state => ({
-    siths: state.siths,
-    scrollUpEnabled: state.siths.infoTable[state.siths.indexTable[0]] && state.siths.infoTable[state.siths.indexTable[0]].info && state.siths.infoTable[state.siths.indexTable[0]].info.master.id,
-    scrollDownEnabled: state.siths.infoTable[state.siths.indexTable.slice(-1)[0]] && state.siths.infoTable[state.siths.indexTable.slice(-1)[0]].info && state.siths.infoTable[state.siths.indexTable.slice(-1)[0]].info.apprentice.id
+const mapStateToProps = ({siths}) => ({
+    siths: siths,
+    scrollUpEnabled: siths.indexTable[0]!==-1 && siths.infoTable[siths.indexTable[0]] && siths.infoTable[siths.indexTable[0]].info && siths.infoTable[siths.indexTable[0]].info.master.id,
+    scrollDownEnabled: siths.indexTable[0]!==-1 &&  siths.infoTable[siths.indexTable.slice(-1)[0]] && siths.infoTable[siths.indexTable.slice(-1)[0]].info && siths.infoTable[siths.indexTable.slice(-1)[0]].info.apprentice.id,
+    allBlocked: siths.indexTable.filter(item => item!==-1 && item!==null).length === 0 
+
 });
 
 const mapDispatchToProps =  dispatch => (

@@ -8,11 +8,11 @@ const disabledButtonStyle = "css-button-disabled";
 
 export default (props) => {
 
-    const {scrollUpEnabled, scrollDownEnabled, scrollUp, scrollDown} = props;
-    const disabledUpClass = scrollUpEnabled? "" : disabledButtonStyle;
-    const disabledDownClass = scrollDownEnabled? "": disabledButtonStyle;
-    const up = scrollUpEnabled? scrollUp : null;
-    const down = scrollDownEnabled? scrollDown: null;
+    const {scrollUpEnabled, scrollDownEnabled, scrollUp, scrollDown, allBlocked} = props;
+    const disabledUpClass = scrollUpEnabled || allBlocked? "" : disabledButtonStyle;
+    const disabledDownClass = scrollDownEnabled || allBlocked? "": disabledButtonStyle;
+    const up = scrollUpEnabled || allBlocked? scrollUp : null;
+    const down = scrollDownEnabled || allBlocked? scrollDown: null;
 
 
     return (

@@ -9,7 +9,7 @@ const ID_FIRSTH_SITH = 3616;
 //Helpers
 const getScrollSlots = (maxSlots, scrollSlots) => (maxSlots <= scrollSlots ? 1 : scrollSlots)
 const getScrollSlotsIndex = (up, scrollSlots) => (up? scrollSlots - 1 : 0)
-const getTableSlotsIndex = (up, scrollSlots) => (up? 0 :  scrollSlots )   
+const getTableSlotsIndex = (up, maxSlosts) => (up? 0 :  maxSlosts-1 )   
 const getScrolledNewIndex = (up, scrollSlots, maxSlots) => (up? scrollSlots-1 : maxSlots-scrollSlots) 
 
 //Actions
@@ -32,7 +32,7 @@ export const scrollDown = {type: ACTIONS.USER_SCROLL, up: false}
 //reducers
 const initialState = {
   infoTable: {}, //Every Item will be of the form {id: info}
-  indexTable: Array(5).fill(-1) //Every item will be the id of the current sloth's sith 
+  indexTable: Array(5).fill(null) //Every item will be the id of the current sloth's sith 
 }
 
 const updateIndex = (state, action) => {
@@ -53,18 +53,16 @@ const scrollState = (state, action) => {
   const newState = {...state};
   const scrollSlots = getScrollSlots(MAX_SLOTS, SCROLL_SPACES);
   const indexSlot = getScrollSlotsIndex(action.up, scrollSlots);
-  const indexTable = getTableSlotsIndex(action.up, scrollSlots, MAX_SLOTS)
+  const indexTable = getTableSlotsIndex(action.up, MAX_SLOTS)
 
   const borderSith = newState.infoTable[newState.indexTable[indexTable]];
   const id = action.up ? borderSith.info.master.id:borderSith.info.apprentice.id
   const newSlots = Array(scrollSlots).fill(-1)
   newSlots[indexSlot] = id
   newState.indexTable = action.up ?  [...newSlots, ...newState.indexTable.slice(0,(MAX_SLOTS - scrollSlots))] : [...newState.indexTable.slice(scrollSlots,MAX_SLOTS), ...newSlots] ; 
-  newState.infoTable[id] = {status: slotStatus.EMPTY} 
-  console.log(borderSith)
-  console.log(state)
-  console.log(newState)
-  
+  newState.infoTable[id] = {status: slotStatus.EMPTY}   
+  console.log(state.indexTable);
+  console.log(newState.indexTable)
   return newState
 }
 
@@ -118,7 +116,6 @@ export function *scroll(action){
   const index = getScrolledNewIndex(action.up, SCROLL_SPACES, MAX_SLOTS);
   yield call(getItem, {id: state.indexTable[index], index: index, status: slotStatus.EMPTY});
 }
-
 
 
 export default function *rootSaga() {

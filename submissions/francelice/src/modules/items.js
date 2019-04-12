@@ -19,8 +19,8 @@ export const ACTIONS = {
 
 //Action creators
 export const firstSith = {type: ACTIONS.FIRST_FETCH};
-export const scrollUp = {type: ACTIONS.USER_SCROLL, up: false}
-export const scrollDown = {type: ACTIONS.USER_SCROLL, up: true}
+export const scrollUp = {type: ACTIONS.USER_SCROLL, up: true}
+export const scrollDown = {type: ACTIONS.USER_SCROLL, up: false}
 
 //reducers
 const initialState = {
@@ -47,14 +47,10 @@ const scrollState = (state, action) => {
   const borderSith = newState.infoTable[newState.indexTable[index]];
   const id = action.up?borderSith.info.apprentice.id:borderSith.info.master.id
 
-  newState.indexTable = action.up ? [...newState.indexTable.slice(0,MAX_SLOTS-2), id] : [ id , ...newState.indexTable.slice(1,MAX_SLOTS-1)] ; 
-  console.log(...newState.indexTable.slice(1,MAX_SLOTS-1));
-  console.log([ id , ...newState.indexTable.slice(1,MAX_SLOTS-1)] );
-  
-  newState.infoTable[newState.indexTable[index]] = {status: slotStatus.EMPTY}
-  console.log(newState.indexTable );
-  console.log(index );
-  
+  console.log(borderSith);
+
+  newState.indexTable = action.up ?  [...newState.indexTable.slice(1,MAX_SLOTS), id] : [id, ...newState.indexTable.slice(0,MAX_SLOTS-1)] ; 
+  newState.infoTable[newState.indexTable[index]] = {status: slotStatus.EMPTY}  
   return newState
 }
 

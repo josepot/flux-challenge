@@ -1,4 +1,4 @@
-import { put, takeEvery, takeLatest, all, call, select, take } from 'redux-saga/effects'
+import { put, takeEvery, takeLatest, all, call, select } from 'redux-saga/effects'
 import { getSith } from '../api'
 
 const slotStatus = {EMPTY: 'EMPTY', FETCHING: 'FETCHING', FETCHED: 'FETCHED'};
@@ -43,14 +43,13 @@ const updateItem = (state, action) => {
 
 const scrollState = (state, action) => {
   const newState = {...state};
-  const index = action.up? MAX_SLOTS - 1: 0;
+  const index = action.up? 0 : MAX_SLOTS - 1;
   const borderSith = newState.infoTable[newState.indexTable[index]];
-  const id = action.up?borderSith.info.apprentice.id:borderSith.info.master.id
-
-  console.log(borderSith);
-
-  newState.indexTable = action.up ?  [...newState.indexTable.slice(1,MAX_SLOTS), id] : [id, ...newState.indexTable.slice(0,MAX_SLOTS-1)] ; 
-  newState.infoTable[newState.indexTable[index]] = {status: slotStatus.EMPTY}  
+  const id = action.up?borderSith.info.master.id:borderSith.info.apprentice.id
+  newState.indexTable = action.up ?  [id, ...newState.indexTable.slice(0,MAX_SLOTS-1)] : [...newState.indexTable.slice(1,MAX_SLOTS), id] ; 
+  newState.infoTable[newState.indexTable[index]] = {status: slotStatus.EMPTY} 
+  console.log(state.indexTable);
+  console.log(newState.indexTable); 
   return newState
 }
 
@@ -100,13 +99,10 @@ export function *getNextSith(action){
 
 export function *scroll(action){
   yield put({type: ACTIONS.SCROLL, up: action.up });
-
   const state = yield select(state => state.siths);
-  const index = action.up? MAX_SLOTS - 1: 0;
-
+  const index = action.up? 0 :  MAX_SLOTS - 1;
   yield call(getItem, {id: state.indexTable[index], index: index, status: slotStatus.EMPTY});
 }
-
 
 
 

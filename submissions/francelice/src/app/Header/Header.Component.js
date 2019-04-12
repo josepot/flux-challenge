@@ -2,10 +2,11 @@ import React from "react"
 
 const rootStyle = 'css-planet-monitor';
 
-export default props => {
+export default ({planet:{name}}) => {
+
     return (
         <h1 className={rootStyle}>
-            obi-wan currently on { props.planet.name }
+            obi-wan currently on { name }
         </h1>
       )
   }

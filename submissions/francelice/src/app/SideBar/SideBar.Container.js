@@ -2,6 +2,8 @@ import React, { Component } from "react"
 import SideBar from './SideBar.Component';
 import { connect } from 'react-redux';
 import { scrollUp, scrollDown } from '../../modules/items';
+import {getStateFirstMasterOnTop, getStateLastApprenticeOnBottom, getStateIsVisitingDangerousPlanet, getStateNoSiths} from '../selectors'
+
 
 class SideBarContainer extends Component {
     
@@ -15,11 +17,10 @@ class SideBarContainer extends Component {
     }
 }
 
-const mapStateToProps = ({siths}) => ({
-    siths: siths,
-    scrollUpEnabled: siths.indexTable[0]!==-1 && siths.infoTable[siths.indexTable[0]] && siths.infoTable[siths.indexTable[0]].info && siths.infoTable[siths.indexTable[0]].info.master.id,
-    scrollDownEnabled: siths.indexTable[0]!==-1 &&  siths.infoTable[siths.indexTable.slice(-1)[0]] && siths.infoTable[siths.indexTable.slice(-1)[0]].info && siths.infoTable[siths.indexTable.slice(-1)[0]].info.apprentice.id,
-    allBlocked: siths.indexTable.filter(item => item!==-1 && item!==null).length === 0 
+const mapStateToProps = ({siths, planet}) => ({
+    scrollUpEnabled: getStateFirstMasterOnTop(siths),
+    scrollDownEnabled: getStateLastApprenticeOnBottom(siths),
+    allBlocked: getStateNoSiths(siths) || getStateIsVisitingDangerousPlanet(siths, planet) 
 
 });
 

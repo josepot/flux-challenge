@@ -32,7 +32,7 @@ export const scrollDown = {type: ACTIONS.USER_SCROLL, up: false}
 //reducers
 const initialState = {
   infoTable: {}, //Every Item will be of the form {id: info}
-  indexTable: Array(5).fill(null) //Every item will be the id of the current sloth's sith 
+  indexTable: Array(5).fill(-1) //Every item will be the id of the current sloth's sith 
 }
 
 const updateIndex = (state, action) => {

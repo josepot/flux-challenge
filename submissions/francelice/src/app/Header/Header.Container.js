@@ -3,7 +3,7 @@ import Header from './Header.Component';
 import { connect } from 'react-redux';
 import { updatePlanet } from '../../modules/header';
 import suscribeToPlanetSocket from '../../common/utils/socket'; 
-
+import {getStateIsVisitingDangerousPlanet} from '../selectors'
 
 class HeaderContainer extends Component {
     
@@ -16,7 +16,9 @@ class HeaderContainer extends Component {
     }
 }
 
-const mapStateToProps = state => ({planet: state.planet});
+const mapStateToProps = ({planet, siths}) => ({
+    planet: planet
+});
 const mapDispatchToProps = dispatch => ({updatePlanet: (text) => dispatch(updatePlanet(text))})
         
 export default connect(mapStateToProps, mapDispatchToProps)(HeaderContainer)

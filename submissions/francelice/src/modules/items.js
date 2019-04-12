@@ -3,7 +3,14 @@ import { getSith } from '../api'
 
 const slotStatus = {EMPTY: 'EMPTY', FETCHING: 'FETCHING', FETCHED: 'FETCHED'};
 const MAX_SLOTS = 5;
+const SCROLL_SPACES = 2;
 const ID_FIRSTH_SITH = 3616;
+
+//Helpers
+const getScrollSlots = (maxSlots, scrollSlots) => (maxSlots <= scrollSlots ? 1 : scrollSlots)
+const getScrollSlotsIndex = (up, scrollSlots) => (up? scrollSlots - 1 : 0)
+const getTableSlotsIndex = (up, scrollSlots) => (up? 0 :  scrollSlots )   
+const getScrolledNewIndex = (up, scrollSlots, maxSlots) => (up? scrollSlots-1 : maxSlots-scrollSlots) 
 
 //Actions
 export const ACTIONS = {
@@ -42,14 +49,22 @@ const updateItem = (state, action) => {
 }
 
 const scrollState = (state, action) => {
+
   const newState = {...state};
-  const index = action.up? 0 : MAX_SLOTS - 1;
-  const borderSith = newState.infoTable[newState.indexTable[index]];
-  const id = action.up?borderSith.info.master.id:borderSith.info.apprentice.id
-  newState.indexTable = action.up ?  [id, ...newState.indexTable.slice(0,MAX_SLOTS-1)] : [...newState.indexTable.slice(1,MAX_SLOTS), id] ; 
-  newState.infoTable[newState.indexTable[index]] = {status: slotStatus.EMPTY} 
-  console.log(state.indexTable);
-  console.log(newState.indexTable); 
+  const scrollSlots = getScrollSlots(MAX_SLOTS, SCROLL_SPACES);
+  const indexSlot = getScrollSlotsIndex(action.up, scrollSlots);
+  const indexTable = getTableSlotsIndex(action.up, scrollSlots, MAX_SLOTS)
+
+  const borderSith = newState.infoTable[newState.indexTable[indexTable]];
+  const id = action.up ? borderSith.info.master.id:borderSith.info.apprentice.id
+  const newSlots = Array(scrollSlots).fill(-1)
+  newSlots[indexSlot] = id
+  newState.indexTable = action.up ?  [...newSlots, ...newState.indexTable.slice(0,(MAX_SLOTS - scrollSlots))] : [...newState.indexTable.slice(scrollSlots,MAX_SLOTS), ...newSlots] ; 
+  newState.infoTable[id] = {status: slotStatus.EMPTY} 
+  console.log(borderSith)
+  console.log(state)
+  console.log(newState)
+  
   return newState
 }
 
@@ -100,7 +115,7 @@ export function *getNextSith(action){
 export function *scroll(action){
   yield put({type: ACTIONS.SCROLL, up: action.up });
   const state = yield select(state => state.siths);
-  const index = action.up? 0 :  MAX_SLOTS - 1;
+  const index = getScrolledNewIndex(action.up, SCROLL_SPACES, MAX_SLOTS);
   yield call(getItem, {id: state.indexTable[index], index: index, status: slotStatus.EMPTY});
 }
 

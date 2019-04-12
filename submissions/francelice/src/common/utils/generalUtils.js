@@ -1,6 +1,6 @@
 /* Taken from https://medium.com/@mhagemann/the-ultimate-way-to-slugify-a-url-string-in-javascript-b8e4a0d849e1*/
 
-export function generateSlugKey(string) {
+export const  generateSlugKey = (string)  => {
     const a = 'àáäâãåăæçèéëêǵḧìíïîḿńǹñòóöôœṕŕßśșțùúüûǘẃẍÿź·/_,:;'
     const b = 'aaaaaaaaceeeeghiiiimnnnoooooprssstuuuuuwxyz------'
     const p = new RegExp(a.split('').join('|'), 'g')
@@ -13,3 +13,5 @@ export function generateSlugKey(string) {
       .replace(/^-+/, '') // Trim - from start of text
       .replace(/-+$/, '') // Trim - from end of text
   }
+
+  export const notEmpty = (string) => string && string.trim() !== ""

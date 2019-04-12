@@ -2,6 +2,7 @@ import React, { Component } from "react"
 import Content from './Content.Component';
 import { connect } from 'react-redux';
 import { firstSith } from '../../modules/items';
+import {getStateSithList, getStateDangerousSithsIndex} from '../selectors'
 
 class ContentContainer extends Component {
     
@@ -14,7 +15,9 @@ class ContentContainer extends Component {
     }
 }
 
-const mapStateToProps = state => ({siths: state.siths.indexTable.map(item => state.siths.infoTable[item])});
+const mapStateToProps = ({siths, planet}) => ({
+    siths: getStateSithList(siths),
+    dangerousSiths: getStateDangerousSithsIndex(siths, planet)
+});
 const mapDispatchToProps = dispatch => ({getFirstSith: () => dispatch(firstSith)})
-
 export default connect(mapStateToProps, mapDispatchToProps)(ContentContainer)

@@ -3,7 +3,6 @@ import Header from './Header.Component';
 import { connect } from 'react-redux';
 import { updatePlanet } from '../../modules/header';
 import suscribeToPlanetSocket from '../../common/utils/socket'; 
-import {getStateIsVisitingDangerousPlanet} from '../selectors'
 
 class HeaderContainer extends Component {
     

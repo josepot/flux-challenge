@@ -1,4 +1,4 @@
-import React,  { Component, Fragment } from "react"
+import React,  { Fragment } from "react"
 import List from '../../common/components/list';
 import {notEmpty} from '../../common/utils/generalUtils'
 

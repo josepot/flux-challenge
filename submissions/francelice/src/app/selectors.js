@@ -1,10 +1,13 @@
-const hasInfo = (indexTable, infoTable, index) => indexTable[index]!==-1 && infoTable[indexTable[index]] && infoTable[indexTable[index]].info
-
+const hasInfo = (indexTable, infoTable, index, sith) => (
+    indexTable[index]===-1 || 
+    (indexTable[index]!==-1 && infoTable[indexTable[index]] && !infoTable[indexTable[index]].info) || 
+    (indexTable[index]!==-1 && infoTable[indexTable[index]] && infoTable[indexTable[index]].info && infoTable[indexTable[index]].info[sith].id) 
+)
 //Returns true if there are still more masters to scroll
-export const getStateFirstMasterOnTop = ({indexTable, infoTable}) =>  hasInfo(indexTable, infoTable, 0) && infoTable[indexTable[0]].info.master.id
+export const getStateFirstMasterOnTop = ({indexTable, infoTable}) =>  hasInfo(indexTable, infoTable, 0, 'master')
 
 //Returns true if there are still more apprentices to scroll
-export const getStateLastApprenticeOnBottom = ({indexTable, infoTable}) =>  hasInfo(indexTable, infoTable, indexTable.length - 1) && infoTable[indexTable[indexTable.length - 1]].info.apprentice.id
+export const getStateLastApprenticeOnBottom = ({indexTable, infoTable}) =>  hasInfo(indexTable, infoTable, indexTable.length - 1, 'apprentice') 
 
 //Returns true if there are no siths fetched on the list
 export const getStateNoSiths =  ({indexTable}) =>  indexTable.filter(item => item!==-1 && item!==null).length === 0 

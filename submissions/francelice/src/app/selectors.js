@@ -10,7 +10,7 @@ export const getStateFirstMasterOnTop = ({indexTable, infoTable}) =>  hasInfo(in
 export const getStateLastApprenticeOnBottom = ({indexTable, infoTable}) =>  hasInfo(indexTable, infoTable, indexTable.length - 1, 'apprentice') 
 
 //Returns true if there are no siths fetched on the list
-export const getStateNoSiths =  ({indexTable}) =>  indexTable.filter(item => item!==-1 && item!==null).length === 0 
+export const getStateNoSiths =  ({indexTable}) =>  indexTable.filter(item => item!==-1 && item!==null).length <= 2 
 
 //Returns true if obi-wan is in a dangerous planet
 export const getStateIsVisitingDangerousPlanet =  ({indexTable, infoTable}, {name}) => (

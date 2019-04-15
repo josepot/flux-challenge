@@ -3,7 +3,7 @@ import { getSith } from '../api'
 
 const slotStatus = {EMPTY: 'EMPTY', FETCHING: 'FETCHING', FETCHED: 'FETCHED'};
 const MAX_SLOTS = 5;
-const SCROLL_SPACES = 3;
+const SCROLL_SPACES = 2;
 const ID_FIRSTH_SITH = 3616;
 
 //Helpers
@@ -49,22 +49,19 @@ const updateItem = (state, action) => {
   return {infoTable: infoTable}
 }
 
-const scrollState = (state, action) => {
+const scrollState = (state, {up, max_slots, scroll_spaces}) => {
 
   const newState = {...state};
-  const scrollSlots = getScrollSlots(MAX_SLOTS, SCROLL_SPACES);
-  const indexSlot = getScrollSlotsIndex(action.up, scrollSlots);
-  const indexTable = getTableSlotsIndex(action.up, MAX_SLOTS)
+  const scrollSlots = getScrollSlots(max_slots, scroll_spaces);
   const newSlots = Array(scrollSlots).fill(-1)
+  newState.indexTable = up ?  [...newSlots, ...newState.indexTable.slice(0,(max_slots - scrollSlots))] : [...newState.indexTable.slice(scrollSlots,max_slots), ...newSlots] ; 
   
-  if(state.indexTable[indexTable] !== -1){
-    const borderSith = state.infoTable[newState.indexTable[indexTable]];
-    const id = action.up ? borderSith.info.master.id:borderSith.info.apprentice.id
-    newState.infoTable[id] = {status: slotStatus.EMPTY}  
-    newSlots[indexSlot] = id
-  }
-
-  newState.indexTable = action.up ?  [...newSlots, ...newState.indexTable.slice(0,(MAX_SLOTS - scrollSlots))] : [...newState.indexTable.slice(scrollSlots,MAX_SLOTS), ...newSlots] ; 
+  //Clean rows outside the view range
+  Object.keys(newState.infoTable).map(item => parseInt(item)).forEach(element => {
+    if(newState.indexTable.indexOf(element) === -1)
+      delete newState.infoTable[element];
+  });
+  
   return newState
 }
 
@@ -84,54 +81,68 @@ export const reducers = (state = initialState, action) => {
   
 
 //sagas 
-export function *getItem({id, status}){
-
+export function *getItem({id}){
   const state = yield select(state => state.siths); 
-
   //If the item is already fetched don't do anything
-  if(!state.infoTable[id] || !state.infoTable[id].info){
-
-    yield put({type: ACTIONS.UPDATE_ITEM, id: id, status: status});
-
+  if(state.infoTable[id].status === slotStatus.EMPTY ){
+    yield put({type: ACTIONS.UPDATE_ITEM, id: id, status: slotStatus.FETCHING});
     let newSith = yield getSith(id).then((response) =>  response.json());
-    yield put({type: ACTIONS.UPDATE_ITEM, id: id, status: slotStatus.FETCHED, info: newSith});
-
-    const newState = yield select(state => state.siths); 
-    const newIndex = newState.indexTable.indexOf(id);
-
-    if(newIndex > 0 && newSith.master.id)
-      yield put({type: ACTIONS.FETCH_SITH, id: newSith.master.id, status: slotStatus.EMPTY, index: newIndex-1});
-
-    if(newIndex < MAX_SLOTS  && newSith.apprentice.id)
-      yield put({type: ACTIONS.FETCH_SITH, id: newSith.apprentice.id, status: slotStatus.EMPTY, index: newIndex+1});
+    yield put({type: ACTIONS.UPDATE_ITEM, id: id, status: slotStatus.FETCHED, info: newSith});    
   }
 
 }
 
-export function *getFirstSith(){
-  yield put({type: ACTIONS.UPDATE_INDEX, id: ID_FIRSTH_SITH, index: Math.floor(MAX_SLOTS/2)});
-  yield call(getItem, {id: ID_FIRSTH_SITH, status: slotStatus.EMPTY});
+export function *getNextSith({id, index}){
+  yield put({type: ACTIONS.UPDATE_INDEX, id: id, index: index});
+  
+  const state = yield select(state => state.siths); 
+  if(!state.infoTable[id] || (state.infoTable[id].status === slotStatus.EMPTY)){
+    yield call(getItem, {id: id});
+  }
+
+  const newState = yield select(state => state.siths); 
+  const newIndex = newState.indexTable.indexOf(id);
+  const master = newState.infoTable[id].info.master.id;
+  const apprentice = newState.infoTable[id].info.apprentice.id;
+
+  if(newIndex>0 && master && (!newState.infoTable[master] || (newState.infoTable[master].status === slotStatus.EMPTY))){
+    yield put({type: ACTIONS.FETCH_SITH, id: master,  index: newIndex-1});
+  }
+  
+  if(newIndex< MAX_SLOTS-1 && apprentice && (!newState.infoTable[apprentice] || (newState.infoTable[apprentice].status === slotStatus.EMPTY))){
+    yield put({type: ACTIONS.FETCH_SITH, id: apprentice,  index: newIndex+1});
+  }
+  
+  //yield call(fixTable);
+
 }
 
-export function *getNextSith(action){
-  console.log(action);
-  yield put({type: ACTIONS.UPDATE_INDEX, id: action.id, index: action.index});
-  yield call(getItem, {id: action.id, status: slotStatus.EMPTY});
+export function *getOtherSith({id, index}){
+  yield put({type: ACTIONS.UPDATE_ITEM, id: id, status: slotStatus.EMPTY});
+  yield call(getNextSith, {id: id, index: index});
 }
+
+export function *getFirstSith(){
+  yield call(getOtherSith, {id: ID_FIRSTH_SITH, index: Math.floor(MAX_SLOTS/2)});
+}
+
 
 export function *scroll(action){
-  yield put({type: ACTIONS.SCROLL, up: action.up});
+  yield put({type: ACTIONS.SCROLL, up: action.up, max_slots: MAX_SLOTS, scroll_spaces: SCROLL_SPACES});
   const state = yield select(state => state.siths);
-  const index = getScrolledNewIndex(action.up, SCROLL_SPACES, MAX_SLOTS);
-  if(state.indexTable[index] !== -1)
-    yield call(getItem, {id: state.indexTable[index], index: index, status: slotStatus.EMPTY});
+  const element = action.up? state.indexTable.filter(item => item !== -1)[0] : [...state.indexTable].reverse().filter(item => item !== -1)[0];
+  const index = state.indexTable.indexOf(element);
+  yield put({type: ACTIONS.UPDATE_ITEM, id: element, status: slotStatus.EMPTY});
+
+  if(index !== -1)
+    yield call(getOtherSith, {id: element, index: index});
 }
 
 
 export default function *rootSaga() {
     yield all([
-      yield takeEvery(ACTIONS.FETCH_SITH, getNextSith),
+      yield takeEvery(ACTIONS.FETCH_SITH, getOtherSith),
       yield takeLatest(ACTIONS.FIRST_FETCH, getFirstSith),
-      yield takeEvery(ACTIONS.USER_SCROLL, scroll),
+      yield takeLatest(ACTIONS.USER_SCROLL, scroll)
     ])
 }

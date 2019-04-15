@@ -8,9 +8,6 @@ const ID_FIRSTH_SITH = 3616;
 
 //Helpers
 const getScrollSlots = (maxSlots, scrollSlots) => (maxSlots <= scrollSlots && scrollSlots<=1 ? 1 : scrollSlots)
-const getScrollSlotsIndex = (up, scrollSlots) => (up? scrollSlots - 1 : 0)
-const getTableSlotsIndex = (up, maxSlosts) => (up? 0 :  maxSlosts-1 )   
-const getScrolledNewIndex = (up, scrollSlots, maxSlots) => (up? scrollSlots-1 : maxSlots-scrollSlots) 
 
 //Actions
 export const ACTIONS = {
@@ -31,7 +28,7 @@ export const scrollDown = {type: ACTIONS.USER_SCROLL, up: false}
 
 //reducers
 const initialState = {
-  infoTable: {}, //Every Item will be of the form {id: info}
+  infoTable: {}, //Every Item will be of the form {id: info, status: slotStatus}
   indexTable: Array(5).fill(-1), //Every item will be the id of the current sloth's sith 
   
 }
@@ -88,7 +85,6 @@ export function *fixTable(){
   const lastApprentice = state.indexTable.filter(item => state.infoTable[item] && state.infoTable[item].info && state.infoTable[item].info.apprentice.id === null);
 
   if(lastApprentice[0]){
-    
     const gap = (MAX_SLOTS-1) - state.indexTable.indexOf(lastApprentice[0]);
     if(gap)
       yield put({type: ACTIONS.USER_SCROLL, up: true, max_slots: MAX_SLOTS, scroll_spaces: gap});
@@ -105,11 +101,11 @@ export function *fixTable(){
     
   }
 
-
 }
 
 export function *getItem({id}){
   const state = yield select(state => state.siths); 
+
   //If the item is already fetched don't do anything
   if(state.infoTable[id].status === slotStatus.EMPTY ){
     yield put({type: ACTIONS.UPDATE_ITEM, id: id, status: slotStatus.FETCHING});
@@ -119,24 +115,22 @@ export function *getItem({id}){
 
 }
 
+//if sith is not already fetching, start fetching, also enqueue child fetching
 export function *getNextSith({id, index}){
   yield put({type: ACTIONS.UPDATE_INDEX, id: id, index: index});
+  yield call(getItem, {id: id});
   
+  //Maybe the index has changed since fetch
   const state = yield select(state => state.siths); 
-  if(!state.infoTable[id] || (state.infoTable[id].status === slotStatus.EMPTY)){
-    yield call(getItem, {id: id});
-  }
+  const newIndex = state.indexTable.indexOf(id);
+  const master = state.infoTable[id].info.master.id;
+  const apprentice = state.infoTable[id].info.apprentice.id;
 
-  const newState = yield select(state => state.siths); 
-  const newIndex = newState.indexTable.indexOf(id);
-  const master = newState.infoTable[id].info.master.id;
-  const apprentice = newState.infoTable[id].info.apprentice.id;
-
-  if(newIndex>0 && master && (!newState.infoTable[master] || (newState.infoTable[master].status === slotStatus.EMPTY))){
+  if(newIndex>0 && master && (!state.infoTable[master] || (state.infoTable[master].status === slotStatus.EMPTY))){
     yield put({type: ACTIONS.FETCH_SITH, id: master,  index: newIndex-1});
   }
   
-  if(newIndex< MAX_SLOTS-1 && apprentice && (!newState.infoTable[apprentice] || (newState.infoTable[apprentice].status === slotStatus.EMPTY))){
+  if(newIndex< MAX_SLOTS-1 && apprentice && (!state.infoTable[apprentice] || (state.infoTable[apprentice].status === slotStatus.EMPTY))){
     yield put({type: ACTIONS.FETCH_SITH, id: apprentice,  index: newIndex+1});
   }
   
@@ -144,16 +138,18 @@ export function *getNextSith({id, index}){
 
 }
 
+//Get a sith
 export function *getOtherSith({id, index}){
   yield put({type: ACTIONS.UPDATE_ITEM, id: id, status: slotStatus.EMPTY});
   yield call(getNextSith, {id: id, index: index});
 }
 
+//Saga to invoke first sith according to especification
 export function *getFirstSith(){
   yield call(getOtherSith, {id: ID_FIRSTH_SITH, index: Math.floor(MAX_SLOTS/2)});
 }
 
-
+//Saga to scroll list
 export function *scroll(action){
   yield put({type: ACTIONS.SCROLL, up: action.up, max_slots: action.max_slots? action.max_slots:MAX_SLOTS, scroll_spaces: action.scroll_spaces?action.scroll_spaces:SCROLL_SPACES});
   const state = yield select(state => state.siths);

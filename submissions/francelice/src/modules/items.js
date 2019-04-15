@@ -81,6 +81,33 @@ export const reducers = (state = initialState, action) => {
   
 
 //sagas 
+
+export function *fixTable(){
+
+  const state = yield select(state => state.siths); 
+  const lastApprentice = state.indexTable.filter(item => state.infoTable[item] && state.infoTable[item].info && state.infoTable[item].info.apprentice.id === null);
+
+  if(lastApprentice[0]){
+    
+    const gap = (MAX_SLOTS-1) - state.indexTable.indexOf(lastApprentice[0]);
+    if(gap)
+      yield put({type: ACTIONS.USER_SCROLL, up: true, max_slots: MAX_SLOTS, scroll_spaces: gap});
+
+  }else{
+    const state = yield select(state => state.siths); 
+    const firstMaster = state.indexTable.filter(item => state.infoTable[item] && state.infoTable[item].info && state.infoTable[item].info.master.id === null);
+    
+    if(firstMaster[0]){
+      const gap = state.indexTable.indexOf(firstMaster[0]);
+    if(gap)
+      yield put({type: ACTIONS.USER_SCROLL, up: false, max_slots: MAX_SLOTS, scroll_spaces: gap});
+    }
+    
+  }
+
+
+}
+
 export function *getItem({id}){
   const state = yield select(state => state.siths); 
   //If the item is already fetched don't do anything
@@ -113,7 +140,7 @@ export function *getNextSith({id, index}){
     yield put({type: ACTIONS.FETCH_SITH, id: apprentice,  index: newIndex+1});
   }
   
-  //yield call(fixTable);
+  yield call(fixTable);
 
 }
 
@@ -128,7 +155,7 @@ export function *getFirstSith(){
 
 
 export function *scroll(action){
-  yield put({type: ACTIONS.SCROLL, up: action.up, max_slots: MAX_SLOTS, scroll_spaces: SCROLL_SPACES});
+  yield put({type: ACTIONS.SCROLL, up: action.up, max_slots: action.max_slots? action.max_slots:MAX_SLOTS, scroll_spaces: action.scroll_spaces?action.scroll_spaces:SCROLL_SPACES});
   const state = yield select(state => state.siths);
   const element = action.up? state.indexTable.filter(item => item !== -1)[0] : [...state.indexTable].reverse().filter(item => item !== -1)[0];
   const index = state.indexTable.indexOf(element);

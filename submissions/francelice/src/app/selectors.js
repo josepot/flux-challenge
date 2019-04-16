@@ -15,7 +15,9 @@ export const getStateNoSiths =  ({indexTable}) =>  indexTable.filter(item => ite
 //Returns true if obi-wan is in a dangerous planet
 export const getStateIsVisitingDangerousPlanet =  ({indexTable, infoTable}, {name}) => (
     indexTable
-        .map(item => infoTable[item] && infoTable[item].info? infoTable[item].info.homeworld.name: null)
+        .filter(item => infoTable[item])
+        .filter(item => infoTable[item].info)
+        .map(item => infoTable[item].info.homeworld.name)
         .filter((item) => item  === name).length !== 0)
 
 //Returns the sith's list on the current planet

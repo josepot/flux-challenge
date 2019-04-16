@@ -1,5 +1,5 @@
-import { put, takeEvery, takeLatest, all, call, select, fork, take, cancel, spawn, race } from 'redux-saga/effects'
-import { getSith } from '../api'
+import { put, takeLatest, all, call, select, fork, take } from 'redux-saga/effects'
+//import { getSith } from '../api'
 import axios from 'axios';
 
 const slotStatus = {EMPTY: 'EMPTY', FETCHING: 'FETCHING', FETCHED: 'FETCHED'};
@@ -34,7 +34,7 @@ export const scrollDown = {type: ACTIONS.USER_SCROLL, up: false}
 
 //reducer's helpers
 const initialState = {
-  infoTable: {}, //Every Item will be of the form {id: info, status: slotStatus}
+  infoTable: {}, //Every Item will be of the form {id: info, status: slotStatus, cancelToken: cancelToken}
   indexTable: Array(5).fill(-1), //Every item will be the id of the current sloth's sith 
   
 }
@@ -57,17 +57,23 @@ const scrollState = (state, {up, max_slots, scroll_spaces}) => {
   const newState = {...state};
   const scrollSlots = getScrollSlots(max_slots, scroll_spaces);
   const newSlots = Array(scrollSlots).fill(-1)
-  newState.indexTable = up ?  [...newSlots, ...newState.indexTable.slice(0,(max_slots - scrollSlots))] : [...newState.indexTable.slice(scrollSlots,max_slots), ...newSlots] ; 
+  
+  newState.indexTable = up ?  
+    [...newSlots, ...newState.indexTable.slice(0,(max_slots - scrollSlots))] : 
+    [...newState.indexTable.slice(scrollSlots,max_slots), ...newSlots]; 
   
   //Clean rows outside the view range
-  Object.keys(newState.infoTable).map(item => parseInt(item)).forEach(element => {
-    if(newState.indexTable.indexOf(element) === -1){
-      if(newState.infoTable[element].cancelToken)
-        newState.infoTable[element].cancelToken.cancel("Canceled request for id "+element)
-      delete newState.infoTable[element];
-    }
-           
-  });
+  Object.keys(newState.infoTable)
+  .map(item => parseInt(item))
+  .filter(item => newState.indexTable.indexOf(item) === -1)
+  .filter(item => newState.infoTable[item].cancelToken)
+  .map(item => newState.infoTable[item].cancelToken.cancel("Canceled request for id "+item));
+
+  Object.keys(newState.infoTable)
+  .map(item => parseInt(item))
+  .filter(item => newState.indexTable.indexOf(item) === -1)
+  .map(item => delete newState.infoTable[item]);
+
   
   return newState
 }
@@ -76,7 +82,6 @@ const scrollState = (state, {up, max_slots, scroll_spaces}) => {
 //REDUCERS
 export const reducers = (state = initialState, action) => {
     switch (action.type) {
-      //Update ordered table
       case ACTIONS.UPDATE_INDEX:
         return Object.assign({},state, updateIndex(state,action));
       case ACTIONS.UPDATE_ITEM:
@@ -92,25 +97,32 @@ export const reducers = (state = initialState, action) => {
 //sagas 
 export function *fixTable(){
 
-  const state = yield select(state => state.siths); 
-  const lastApprentice = state.indexTable.filter(item => state.infoTable[item] && state.infoTable[item].info && state.infoTable[item].info.apprentice.id === null);
+  let state = yield select(state => state.siths); 
+  const lastApprentice = state.indexTable
+    .filter(item => state.infoTable[item])
+    .filter(item => state.infoTable[item].info)
+    .filter(item => state.infoTable[item].info.apprentice.id === null);
 
   if(lastApprentice[0]){
     const gap = (MAX_SLOTS-1) - state.indexTable.indexOf(lastApprentice[0]);
     if(gap)
       yield put({type: ACTIONS.USER_SCROLL, up: true, max_slots: MAX_SLOTS, scroll_spaces: gap});
 
-  }else{
-    const state = yield select(state => state.siths); 
-    const firstMaster = state.indexTable.filter(item => state.infoTable[item] && state.infoTable[item].info && state.infoTable[item].info.master.id === null);
+  }
+
+  //Stay at the top if the list is shorter than MAX_SLOTS
+  state = yield select(state => state.siths); 
+  const firstMaster = state.indexTable
+      .filter(item => state.infoTable[item])
+      .filter(item => state.infoTable[item].info)
+      .filter(item => state.infoTable[item].info.master.id === null);
     
-    if(firstMaster[0]){
-      const gap = state.indexTable.indexOf(firstMaster[0]);
+  if(firstMaster[0]){
+    const gap = state.indexTable.indexOf(firstMaster[0]);
     if(gap)
       yield put({type: ACTIONS.USER_SCROLL, up: false, max_slots: MAX_SLOTS, scroll_spaces: gap});
-    }
-    
   }
+  
 
 }
 
@@ -121,7 +133,6 @@ export function *getItem({id}){
   //If the item is already fetched don't do anything
   if(state.infoTable[id].status === slotStatus.EMPTY ){
 
-    //let response = yield call(getSith, id);
     const cancelSource = axios.CancelToken.source()
     yield put({type: ACTIONS.UPDATE_ITEM, id: id, status: slotStatus.FETCHING, cancelToken: cancelSource});
     try{
@@ -168,7 +179,7 @@ export function *fetchSiths(){
   while (true) {
     const {id, index} = yield take(ACTIONS.FETCH_SITH)
     // fork return a Task object
-    const task = yield fork(getNextSith, {id: id, index: index})
+    yield fork(getNextSith, {id: id, index: index})
 
   }
 }

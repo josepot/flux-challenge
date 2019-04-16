@@ -6,7 +6,6 @@ import {getStateFirstMasterOnTop, getStateLastApprenticeOnBottom, getStateIsVisi
 
 
 class SideBarContainer extends Component {
-    
     performScrollUp(){ this.props.scrollUp();}
     performScrollDown(){ this.props.scrollDown();}
 

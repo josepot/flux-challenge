@@ -1,10 +1,13 @@
 import { put, takeEvery, takeLatest, all, call, select, fork, take, cancel, spawn, race } from 'redux-saga/effects'
 import { getSith } from '../api'
+import axios from 'axios';
 
 const slotStatus = {EMPTY: 'EMPTY', FETCHING: 'FETCHING', FETCHED: 'FETCHED'};
 const MAX_SLOTS = 5;
 const SCROLL_SPACES = 2;
 const ID_FIRSTH_SITH = 3616;
+const BASE_URL = 'http://localhost:3000/';
+const SITHS_ENDPOINT = 'dark-jedis/';
 
 //Helpers
 const getScrollSlots = (maxSlots, scrollSlots) => (maxSlots <= scrollSlots && scrollSlots<=1 ? 1 : scrollSlots)
@@ -58,8 +61,12 @@ const scrollState = (state, {up, max_slots, scroll_spaces}) => {
   
   //Clean rows outside the view range
   Object.keys(newState.infoTable).map(item => parseInt(item)).forEach(element => {
-    if(newState.indexTable.indexOf(element) === -1)
+    if(newState.indexTable.indexOf(element) === -1){
+      if(newState.infoTable[element].cancelToken)
+        newState.infoTable[element].cancelToken.cancel("Canceled request for id "+element)
       delete newState.infoTable[element];
+    }
+           
   });
   
   return newState
@@ -113,45 +120,63 @@ export function *getItem({id}){
 
   //If the item is already fetched don't do anything
   if(state.infoTable[id].status === slotStatus.EMPTY ){
-    yield put({type: ACTIONS.UPDATE_ITEM, id: id, status: slotStatus.FETCHING});
-    let response = yield call(getSith, id);
-    yield put({type: ACTIONS.UPDATE_ITEM, id: id, status: slotStatus.FETCHED, info: response.data});    
+
+    //let response = yield call(getSith, id);
+    const cancelSource = axios.CancelToken.source()
+    yield put({type: ACTIONS.UPDATE_ITEM, id: id, status: slotStatus.FETCHING, cancelToken: cancelSource});
+    try{
+      let response = yield call(axios.get,`${BASE_URL}${SITHS_ENDPOINT}${id}`,{ cancelToken: cancelSource.token });
+      yield put({type: ACTIONS.UPDATE_ITEM, id: id, status: slotStatus.FETCHED, info: response.data});
+    }catch( err ){
+      console.log(err);
+    }
+        
   }
 
 }
+
 
 //if sith is not already fetching, start fetching, also enqueue child fetching
 export function *getNextSith({id, index}){
   yield put({type: ACTIONS.UPDATE_INDEX, id: id, index: index});
   yield call(getItem, {id: id});
   
-  //Maybe the index has changed since fetch
   const state = yield select(state => state.siths); 
-  const newIndex = state.indexTable.indexOf(id);
-  const master = state.infoTable[id].info.master.id;
-  const apprentice = state.infoTable[id].info.apprentice.id;
 
-  if(newIndex>0 && master && (!state.infoTable[master] || (state.infoTable[master].status === slotStatus.EMPTY))){
-    //yield put({type: ACTIONS.FETCH_SITH, id: master,  index: newIndex-1});
-    yield call(getOtherSith, {id: master,  index: newIndex-1});
-  }
+  if(state.infoTable[id] && state.infoTable[id].status === slotStatus.FETCHED){
+   
+    //Maybe the index has changed since fetch
+    const newIndex = state.indexTable.indexOf(id);
+    const master = state.infoTable[id].info.master.id;
+    const apprentice = state.infoTable[id].info.apprentice.id;
   
-  if(newIndex< MAX_SLOTS-1 && apprentice && (!state.infoTable[apprentice] || (state.infoTable[apprentice].status === slotStatus.EMPTY))){
-    yield call(getOtherSith, {id: apprentice,  index: newIndex+1});
+    if(newIndex>0 && master && (!state.infoTable[master] || (state.infoTable[master].status === slotStatus.EMPTY)))
+      yield call(getOtherSith, {id: master,  index: newIndex-1});
+    
+    
+    if(newIndex< MAX_SLOTS-1 && apprentice && (!state.infoTable[apprentice] || (state.infoTable[apprentice].status === slotStatus.EMPTY)))
+      yield call(getOtherSith, {id: apprentice,  index: newIndex+1});
   }
 
-  console.log(newIndex+" "+state.infoTable[id].info.name)
-  if(newIndex===-1)
-    yield cancel();
   
   yield call(fixTable);
 
 }
 
+//Create task for actually making request
+export function *fetchSiths(){
+  while (true) {
+    const {id, index} = yield take(ACTIONS.FETCH_SITH)
+    // fork return a Task object
+    const task = yield fork(getNextSith, {id: id, index: index})
+
+  }
+}
+
+
 //Get a sith
 export function *getOtherSith({id, index}){
   yield put({type: ACTIONS.UPDATE_ITEM, id: id, status: slotStatus.EMPTY});
-  //yield call(getNextSith, {id: id, index: index});
   yield put({type: ACTIONS.FETCH_SITH, id: id, index: index});
 }
 
@@ -160,16 +185,6 @@ export function *getFirstSith(){
   yield call(getOtherSith, {id: ID_FIRSTH_SITH, index: Math.floor(MAX_SLOTS/2)});
 }
 
-export function *fetchSiths(){
-
-  while (true) {
-    const {id, index} = yield take(ACTIONS.FETCH_SITH)
-    // fork return a Task object
-    const task = yield spawn(getNextSith, {id: id, index: index})
-    const finish = take([ACTIONS.CANCEL_FETCH, ACTIONS.SUCESS_FETCH])
-
-  }
-}
 
 //Saga to scroll list
 export function *scroll(action){
@@ -186,7 +201,6 @@ export function *scroll(action){
 //Root saga
 export default function *rootSaga() {
     yield all([
-      //yield takeEvery(ACTIONS.FETCH_SITH, getOtherSith),
       yield takeLatest(ACTIONS.FIRST_FETCH, getFirstSith),
       yield takeLatest(ACTIONS.USER_SCROLL, scroll),
       yield fetchSiths()

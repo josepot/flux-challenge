@@ -1,7 +1,9 @@
+import {UNDEFINED_SITH} from '../modules/items'
+
 const hasInfo = (indexTable, infoTable, index, sith) => (
-    indexTable[index]===-1 || 
-    (indexTable[index]!==-1 && infoTable[indexTable[index]] && !infoTable[indexTable[index]].info) || 
-    (indexTable[index]!==-1 && infoTable[indexTable[index]] && infoTable[indexTable[index]].info && infoTable[indexTable[index]].info[sith].id) 
+    indexTable[index]===UNDEFINED_SITH || 
+    (infoTable[indexTable[index]] && !infoTable[indexTable[index]].info) || 
+    (infoTable[indexTable[index]].info[sith].id) 
 )
 //Returns true if there are still more masters to scroll
 export const getStateFirstMasterOnTop = ({indexTable, infoTable}) =>  hasInfo(indexTable, infoTable, 0, 'master')
@@ -10,7 +12,7 @@ export const getStateFirstMasterOnTop = ({indexTable, infoTable}) =>  hasInfo(in
 export const getStateLastApprenticeOnBottom = ({indexTable, infoTable}) =>  hasInfo(indexTable, infoTable, indexTable.length - 1, 'apprentice') 
 
 //Returns true if there are no siths fetched on the list
-export const getStateNoSiths =  ({indexTable}) =>  indexTable.filter(item => item!==-1 && item!==null).length <= 2 
+export const getStateNoSiths =  ({indexTable}) =>  indexTable.filter(item => item!==UNDEFINED_SITH).filter(item => item!==null).length <= 2 
 
 //Returns true if obi-wan is in a dangerous planet
 export const getStateIsVisitingDangerousPlanet =  ({indexTable, infoTable}, {name}) => (

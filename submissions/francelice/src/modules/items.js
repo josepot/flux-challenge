@@ -8,6 +8,7 @@ const SCROLL_SPACES = 2;
 const ID_FIRSTH_SITH = 3616;
 const BASE_URL = 'http://localhost:3000/';
 const SITHS_ENDPOINT = 'dark-jedis/';
+export const UNDEFINED_SITH = -1;
 
 //Helpers
 const getScrollSlots = (maxSlots, scrollSlots) => (maxSlots <= scrollSlots && scrollSlots<=1 ? 1 : scrollSlots)
@@ -35,7 +36,7 @@ export const scrollDown = {type: ACTIONS.USER_SCROLL, up: false}
 //reducer's helpers
 const initialState = {
   infoTable: {}, //Every Item will be of the form {id: info, status: slotStatus, cancelToken: cancelToken}
-  indexTable: Array(5).fill(-1), //Every item will be the id of the current sloth's sith 
+  indexTable: Array(5).fill(UNDEFINED_SITH), //Every item will be the id of the current sloth's sith 
   
 }
 
@@ -56,7 +57,7 @@ const scrollState = (state, {up, max_slots, scroll_spaces}) => {
 
   const newState = {...state};
   const scrollSlots = getScrollSlots(max_slots, scroll_spaces);
-  const newSlots = Array(scrollSlots).fill(-1)
+  const newSlots = Array(scrollSlots).fill(UNDEFINED_SITH)
   
   newState.indexTable = up ?  
     [...newSlots, ...newState.indexTable.slice(0,(max_slots - scrollSlots))] : 
@@ -65,13 +66,13 @@ const scrollState = (state, {up, max_slots, scroll_spaces}) => {
   //Clean rows outside the view range
   Object.keys(newState.infoTable)
   .map(item => parseInt(item))
-  .filter(item => newState.indexTable.indexOf(item) === -1)
+  .filter(item => newState.indexTable.indexOf(item) === UNDEFINED_SITH)
   .filter(item => newState.infoTable[item].cancelToken)
   .map(item => newState.infoTable[item].cancelToken.cancel("Canceled request for id "+item));
 
   Object.keys(newState.infoTable)
   .map(item => parseInt(item))
-  .filter(item => newState.indexTable.indexOf(item) === -1)
+  .filter(item => newState.indexTable.indexOf(item) === UNDEFINED_SITH)
   .map(item => delete newState.infoTable[item]);
 
   
@@ -169,9 +170,7 @@ export function *getNextSith({id, index}){
       yield call(getOtherSith, {id: apprentice,  index: newIndex+1});
   }
 
-  
   yield call(fixTable);
-
 }
 
 //Create task for actually making request
@@ -184,7 +183,6 @@ export function *fetchSiths(){
   }
 }
 
-
 //Get a sith
 export function *getOtherSith({id, index}){
   yield put({type: ACTIONS.UPDATE_ITEM, id: id, status: slotStatus.EMPTY});
@@ -196,16 +194,15 @@ export function *getFirstSith(){
   yield call(getOtherSith, {id: ID_FIRSTH_SITH, index: Math.floor(MAX_SLOTS/2)});
 }
 
-
 //Saga to scroll list
 export function *scroll(action){
   yield put({type: ACTIONS.SCROLL, up: action.up, max_slots: action.max_slots? action.max_slots:MAX_SLOTS, scroll_spaces: action.scroll_spaces?action.scroll_spaces:SCROLL_SPACES});
   const state = yield select(state => state.siths);
-  const element = action.up? state.indexTable.filter(item => item !== -1)[0] : [...state.indexTable].reverse().filter(item => item !== -1)[0];
+  const element = action.up? state.indexTable.filter(item => item !== UNDEFINED_SITH)[0] : [...state.indexTable].reverse().filter(item => item !== UNDEFINED_SITH)[0];
   const index = state.indexTable.indexOf(element);
   yield put({type: ACTIONS.UPDATE_ITEM, id: element, status: slotStatus.EMPTY});
 
-  if(index !== -1)
+  if(index !== UNDEFINED_SITH)
     yield call(getOtherSith, {id: element, index: index});
 }
 

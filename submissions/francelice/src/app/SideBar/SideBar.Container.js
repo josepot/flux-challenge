@@ -2,7 +2,7 @@ import React, { Component } from "react"
 import SideBar from './SideBar.Component';
 import { connect } from 'react-redux';
 import { scrollUp, scrollDown } from '../../modules/items';
-import {getStateFirstMasterOnTop, getStateLastApprenticeOnBottom, getStateIsVisitingDangerousPlanet, getStateNoSiths} from '../selectors'
+import {getStateHasMoreMasters, getStateHasMoreApprentices, getStateIsVisitingDangerousPlanet, getStateNoSiths} from '../selectors'
 
 
 class SideBarContainer extends Component {
@@ -16,10 +16,10 @@ class SideBarContainer extends Component {
     }
 }
 
-const mapStateToProps = ({siths, planet}) => ({
-    scrollUpEnabled: getStateFirstMasterOnTop(siths),
-    scrollDownEnabled: getStateLastApprenticeOnBottom(siths),
-    allBlocked: getStateNoSiths(siths) || getStateIsVisitingDangerousPlanet(siths, planet) 
+const mapStateToProps = (state) => ({
+    scrollUpEnabled: getStateHasMoreMasters(state),
+    scrollDownEnabled: getStateHasMoreApprentices(state),
+    allBlocked: getStateNoSiths(state) || getStateIsVisitingDangerousPlanet(state) 
 
 });
 

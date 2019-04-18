@@ -14,7 +14,6 @@ class Item extends Component {
 }
 
 Item.propTypes = { 
-    className: propTypes.string,
     content: propTypes.element
 }
 

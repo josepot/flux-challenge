@@ -5,18 +5,21 @@ import Item from './item';
 class List extends Component {
 
   render() {
-    const {className, content, itemClassName} = this.props;
+    const {content, itemClassName, ...others} = this.props;
 
     return (
-      <ul className={className}>
+      <ul {...others}>
         {content.map( item => <Item content={item.content} key={item.id} className={itemClassName} />)}
       </ul>
     )
   }
 }
 
+List.defaultProps = {
+  content: []
+}
+
 List.propTypes = { 
-    className: propTypes.string,
     content: propTypes.array,
     itemsClassName: propTypes.string
 }

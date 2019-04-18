@@ -20,5 +20,5 @@ const mapStateToProps = (state) => ({
     dangerousSiths: getStateDangerousSithsIndex(state)
 });
 
-const mapDispatchToProps = dispatch => ({getFirstSith: () => dispatch(firstSith)})
+const mapDispatchToProps = dispatch => ({getFirstSith: () => dispatch(firstSith())})
 export default connect(mapStateToProps, mapDispatchToProps)(ContentContainer)

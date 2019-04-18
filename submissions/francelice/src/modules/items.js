@@ -21,17 +21,13 @@ export const ACTIONS = {
     FIRST_FETCH : 'FIRST_FETCH',
     UPDATE_ITEM: 'UPDATE_ITEM',
     UPDATE_INDEX: 'UPDATE_INDEX',
-    FETCH_SITH: 'FETCH_SITH',
-    CANCEL_FETCH: 'CANCEL_FETCH',
-    SUCESS_FETCH: 'SUCESS_FETCH'
-
-
+    FETCH_SITH: 'FETCH_SITH'
 };
 
 //Action creators
-export const firstSith = {type: ACTIONS.FIRST_FETCH};
-export const scrollUp = {type: ACTIONS.USER_SCROLL, up: true}
-export const scrollDown = {type: ACTIONS.USER_SCROLL, up: false}
+export const firstSith = () => ({type: ACTIONS.FIRST_FETCH})
+export const scrollUp = () => ({type: ACTIONS.USER_SCROLL, up: true})
+export const scrollDown = () => ({type: ACTIONS.USER_SCROLL, up: false})
 
 //reducer's helpers
 const initialState = {

@@ -5,7 +5,6 @@
   "dependencies": {
     "@babel/polyfill": "^7.4.3",
     "axios": "^0.18.0",
-    "jest": "^24.7.1",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "react-redux": "^7.0.1",
@@ -17,7 +16,7 @@
   "scripts": {
     "start": "set PORT=5000 && webpack-dev-server --open --hot --inline --mode development",
     "build": "webpack --mode production",
-    "test": "react-scripts test",
+    "test": "jest",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
@@ -31,13 +30,23 @@
   ],
   "devDependencies": {
     "css-loader": "^2.1.1",
+    "enzyme": "^3.9.0",
+    "enzyme-adapter-react-16": "^1.12.1",
+    "enzyme-to-json": "^3.3.5",
     "html-loader": "^0.5.5",
     "html-webpack-plugin": "^3.2.0",
+    "jest": "^24.7.1",
+    "react-test-renderer": "^16.8.6",
     "sass-loader": "^7.1.0",
     "style-loader": "^0.23.1",
     "url-loader": "^1.1.2",
     "webpack": "^4.29.6",
     "webpack-cli": "^3.3.0",
     "webpack-dev-server": "^3.3.0"
+  },
+  "jest": {
+    "verbose": true,
+    "setupTestFrameworkScriptFile": "./src/setup/setupTests.js",
+    "snapshotSerializers": ["enzyme-to-json/serializer"]
   }
 }

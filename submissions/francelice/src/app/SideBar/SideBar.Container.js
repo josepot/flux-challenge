@@ -24,6 +24,6 @@ const mapStateToProps = (state) => ({
 });
 
 const mapDispatchToProps =  dispatch => (
-    {scrollUp: () => dispatch(scrollUp), 
-     scrollDown: () => dispatch(scrollDown)})
+    {scrollUp: () => dispatch(scrollUp()), 
+     scrollDown: () => dispatch(scrollDown())})
 export default connect(mapStateToProps, mapDispatchToProps)(SideBarContainer)

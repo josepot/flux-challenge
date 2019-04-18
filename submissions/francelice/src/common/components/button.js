@@ -13,8 +13,6 @@ class Button extends Component {
 }
 
 Button.propTypes = { 
-    className: propTypes.string,
-    onClick: propTypes.func,
     label: propTypes.string
 }
 

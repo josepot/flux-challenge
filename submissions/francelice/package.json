@@ -5,6 +5,7 @@
   "dependencies": {
     "@babel/polyfill": "^7.4.3",
     "axios": "^0.18.0",
+    "ramda": "^0.26.1",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "react-redux": "^7.0.1",
@@ -47,6 +48,8 @@
   "jest": {
     "verbose": true,
     "setupTestFrameworkScriptFile": "./src/setup/setupTests.js",
-    "snapshotSerializers": ["enzyme-to-json/serializer"]
+    "snapshotSerializers": [
+      "enzyme-to-json/serializer"
+    ]
   }
 }

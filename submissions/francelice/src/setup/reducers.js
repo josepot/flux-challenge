@@ -1,9 +1,8 @@
 import { combineReducers } from "redux";
-import { reducers as planet } from '../modules/header'
-import { reducers as siths } from '../modules/items'
+import currentPlanet from '../modules/currentPlanet'
+import siths from '../modules/siths'
 
 export const reducers = combineReducers({
-  planet,
+  currentPlanet,
   siths
 });
-  

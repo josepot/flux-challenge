@@ -1,25 +1,10 @@
-import React, { Component } from "react"
 import Header from './Header.Component';
+import {createStructuredSelector} from 'reselect';
 import { connect } from 'react-redux';
-import { updatePlanet } from '../../modules/header';
-import suscribeToPlanetSocket from '../../common/utils/socket'; 
+import { getCurrentPlanetName } from '../../modules/currentPlanet';
 
-class HeaderContainer extends Component {
-    
-    componentDidMount(){
-        suscribeToPlanetSocket(this.props.updatePlanet);
-    }
-    
-    render() {
-        return <Header { ...this.props } />
-    }
-}
-
-const mapStateToProps = ({planet, siths}) => ({
-    planet: planet
+const getPlanetProps = createStructuredSelector({
+  name: getCurrentPlanetName
 });
-const mapDispatchToProps = dispatch => ({updatePlanet: (text) => dispatch(updatePlanet(text))})
-        
-export default connect(mapStateToProps, mapDispatchToProps)(HeaderContainer)
 
-
+export default connect(getPlanetProps, null)(Header);

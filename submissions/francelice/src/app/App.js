@@ -1,12 +1,15 @@
-import React, { Component } from 'react';
-import Layout from './Layout';
+import React from 'react';
 
-class App extends Component {
-  render() {
-    return (
-      <Layout/>
-    );
-  }
-}
+import Header from './Header'
+import Siths from './Siths'
+import Scroll from './Scroll'
 
-export default App;
+export default () => (
+  <div className="css-root">
+    <Header/>
+    <section className="css-scrollable-list">
+      <Siths />
+      <Scroll/>
+    </section>
+  </div>
+)
